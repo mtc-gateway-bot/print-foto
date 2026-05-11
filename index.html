@@ -3,78 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Cetak Foto MTC</title>
+    <title>Sistem Cetak MTC</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: #e9ecef; }
-        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 400px; margin: auto; }
-        h2 { color: #0088cc; margin-bottom: 5px; }
-        #preview { width: 100%; border-radius: 8px; margin-top: 15px; display: none; border: 2px dashed #0088cc; }
-        select, input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
-        button { background: #0088cc; color: white; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
-        button:active { transform: scale(0.98); background: #006699; }
-        button:disabled { background: #ccc; }
-        #status { font-weight: bold; margin-top: 15px; min-height: 20px; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        button { background: #0088cc; color: white; border: none; font-weight: bold; }
+        #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
+        img { width: 100%; display: none; margin-top: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Pola Print Foto</h2>
-    <p style="font-size: 14px; color: #666;">Kirim foto ke Epson L3210 (Online)</p>
-    
-    <input type="file" id="fileInput" accept="image/*">
-    
-    <select id="sizeSelect">
-        <option value="Full">Ukuran Asli</option>
-        <option value="2x3">Pas Foto 2x3</option>
-        <option value="3x4">Pas Foto 3x4</option>
-        <option value="4x6">Pas Foto 4x6</option>
+<div class="card">
+    <h3>🖨️ Print Foto MTC</h3>
+    <input type="file" id="foto" accept="image/*">
+    <select id="ukuran">
+        <option value="Ukuran Asli">Ukuran Asli</option>
+        <option value="2x3">2 x 3</option>
+        <option value="3x4">3 x 4</option>
+        <option value="4x6">4 x 6</option>
     </select>
-
-    <img id="preview" alt="Preview">
-    
-    <button id="sendBtn">KIRIM KE PRINTER</button>
-    <p id="status"></p>
+    <img id="view">
+    <button id="btnKirim">KIRIM KE PRINTER</button>
+    <div id="status"></div>
 </div>
 
 <script>
-    // Konfigurasi Utama
-    const token = '8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc';
-    const chat_id = '683738329'; 
+    const btn = document.getElementById('btnKirim');
+    const stat = document.getElementById('status');
+    const fotoInput = document.getElementById('foto');
+    const view = document.getElementById('view');
 
-    const fileInput = document.getElementById('fileInput');
-    const sizeSelect = document.getElementById('sizeSelect');
-    const sendBtn = document.getElementById('sendBtn');
-    const status = document.getElementById('status');
-    const preview = document.getElementById('preview');
-
-    fileInput.onchange = function(e) {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                preview.src = event.target.result;
-                preview.style.display = 'block';
-                status.innerText = "Foto siap dikirim.";
-                status.style.color = "black";
-            }
-            reader.readAsDataURL(e.target.files[0]);
+    // Preview Gambar
+    fotoInput.onchange = (e) => {
+        const [file] = e.target.files;
+        if (file) {
+            view.src = URL.createObjectURL(file);
+            view.style.display = 'block';
         }
-    };
+    }
 
-    sendBtn.onclick = async function() {
-    status.innerText = "Tes koneksi...";
-    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: chat_id,
-            text: "Tes: Website sudah terhubung ke Bot!"
-        })
-    });
-    const res = await response.json();
-    if(res.ok) { status.innerText = "✅ KONEKSI BERHASIL!"; }
-    else { status.innerText = "❌ Gagal: " + res.description; }
-};
+    btn.onclick = async () => {
+        const file = fotoInput.files[0];
+        if (!file) return alert("Pilih foto dulu!");
+
+        btn.disabled = true;
+        stat.innerText = "⏳ Sedang Mengirim...";
+        stat.style.color = "blue";
+
+        // TOKEN & ID LANGSUNG DI DALAM FUNGSI
+        const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
+        const CID = "683738329";
+
+        const fd = new FormData();
+        fd.append('chat_id', CID);
+        fd.append('photo', file);
+        fd.append('caption', "Order Cetak: " + document.getElementById('ukuran').value);
+
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
+                method: 'POST',
+                body: fd
+            });
+            
+            const data = await res.json();
+
+            if (data.ok) {
+                stat.innerText = "✅ BERHASIL DIKIRIM!";
+                stat.style.color = "green";
+            } else {
+                stat.innerText = "❌ ERROR: " + data.description;
+                stat.style.color = "red";
+                console.log(data);
+            }
+        } catch (e) {
+            stat.innerText = "❌ Masalah Koneksi";
+            stat.style.color = "red";
+        } finally {
+            btn.disabled = false;
+        }
+    }
 </script>
 
 </body>
