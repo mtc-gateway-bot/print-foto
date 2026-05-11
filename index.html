@@ -62,44 +62,19 @@
     };
 
     sendBtn.onclick = async function() {
-        const file = fileInput.files[0];
-        if (!file) return alert('Silakan pilih foto terlebih dahulu!');
-        
-        status.innerText = "Sedang mengunggah...";
-        status.style.color = "orange";
-        sendBtn.disabled = true;
-
-        const formData = new FormData();
-        formData.append('chat_id', chat_id);
-        formData.append('photo', file);
-        formData.append('caption', "🖨️ PESANAN CETAK\nUkuran: " + sizeSelect.value + "\nStatus: Menunggu Antrean");
-
-        try {
-            const response = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-
-            if (response.ok) {
-                status.innerText = "✅ BERHASIL! Cek Telegram kamu.";
-                status.style.color = "green";
-                fileInput.value = ""; // Reset input
-                preview.style.display = "none";
-            } else {
-                // Memberikan pesan error lebih jelas
-                status.innerText = "❌ Gagal: " + (result.description || "Terjadi kesalahan");
-                status.style.color = "red";
-                console.error(result);
-            }
-        } catch (err) {
-            status.innerText = "❌ Koneksi Error: Pastikan internet aktif.";
-            status.style.color = "red";
-        } finally {
-            sendBtn.disabled = false;
-        }
-    };
+    status.innerText = "Tes koneksi...";
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chat_id,
+            text: "Tes: Website sudah terhubung ke Bot!"
+        })
+    });
+    const res = await response.json();
+    if(res.ok) { status.innerText = "✅ KONEKSI BERHASIL!"; }
+    else { status.innerText = "❌ Gagal: " + res.description; }
+};
 </script>
 
 </body>
