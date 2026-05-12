@@ -1,87 +1,48 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Cetak MTC</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: #0088cc; color: white; border: none; font-weight: bold; cursor: pointer; }
-        button:disabled { background: #ccc; }
-        #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
-        img { width: 100%; display: none; margin-top: 10px; border-radius: 5px; }
-    </style>
-</head>
+<html>
 <body>
+    <h2>Tes Kirim Foto MTC</h2>
+    
+    <input type="file" id="pilihFoto" accept="image/*"><br><br>
+    
+    <button id="gasKirim" style="padding: 10px 20px;">KIRIM KE PRINTER</button>
+    
+    <p id="info">Status: Siap.</p>
 
-<div class="card">
-    <h3>🖨️ Print Foto MTC</h3>
-    <input type="file" id="foto" accept="image/*">
-    <img id="view" src="" alt="Preview">
-    <select id="ukuran">
-        <option value="full">Full Page Photo (A4)</option>
-        <option value="setengah">13 x 18 cm (Setengah A4)</option>
-        <option value="dompet">9 x 13 cm (Ukuran Dompet)</option>
-    </select>
-    <button id="btnKirim">KIRIM KE PRINTER</button>
-    <div id="status">Pilih foto dan ukuran</div>
-</div>
+    <script>
+        const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
+        const CID = "683730329";
 
-<script>
-    const btn = document.getElementById('btnKirim');
-    const stat = document.getElementById('status');
-    const fotoInput = document.getElementById('foto');
-    const view = document.getElementById('view');
-    const ukuranSelect = document.getElementById('ukuran');
+        document.getElementById('gasKirim').onclick = async () => {
+            const foto = document.getElementById('pilihFoto').files[0];
+            const info = document.getElementById('info');
 
-    const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
-    const CID = "683730329"; 
+            if (!foto) return alert("Pilih foto dulu Pak!");
 
-    fotoInput.onchange = (e) => {
-        const [file] = e.target.files;
-        if (file) {
-            view.src = URL.createObjectURL(file);
-            view.style.display = 'block';
-            stat.innerText = "Foto siap dikirim!";
-        }
-    }
+            info.innerText = "Sedang mengirim...";
+            
+            const fd = new FormData();
+            fd.append('chat_id', CID);
+            fd.append('photo', foto);
+            fd.append('caption', 'full'); // Default ukuran full
 
-    btn.onclick = async () => {
-        const file = fotoInput.files[0];
-        if (!file) return alert("Pilih foto dulu!");
-
-        btn.disabled = true;
-        stat.innerText = "⏳ Sedang Mengirim ke Epson...";
-        stat.style.color = "blue";
-
-        const fd = new FormData();
-        fd.append('chat_id', CID);
-        fd.append('photo', file);
-        fd.append('caption', ukuranSelect.value);
-
-        try {
-            // Menambahkan timestamp (?t=) agar Telegram menganggap pesan selalu baru
-            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto?t=${Date.now()}`, {
-                method: 'POST',
-                body: fd
-            });
-            const data = await res.json();
-            if (data.ok) {
-                stat.innerText = "✅ BERHASIL! Cek jendela CMD Anda.";
-                stat.style.color = "green";
-            } else {
-                stat.innerText = "❌ ERROR: " + data.description;
-                stat.style.color = "red";
+            try {
+                // Tambahkan timestamp agar tidak dianggap cache oleh Telegram
+                const response = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto?t=${Date.now()}`, {
+                    method: 'POST',
+                    body: fd
+                });
+                
+                const hasil = await response.json();
+                if (hasil.ok) {
+                    info.innerText = "✅ TERKIRIM KE TELEGRAM! Cek CMD.";
+                } else {
+                    info.innerText = "❌ GAGAL: " + hasil.description;
+                }
+            } catch (err) {
+                info.innerText = "❌ Koneksi Bermasalah.";
             }
-        } catch (e) {
-            stat.innerText = "❌ Masalah Koneksi";
-            stat.style.color = "red";
-        } finally {
-            btn.disabled = false;
-        }
-    }
-</script>
+        };
+    </script>
 </body>
 </html>
