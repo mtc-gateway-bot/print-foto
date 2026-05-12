@@ -1,68 +1,64 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Cetak MTC</title>
+    <title>Aplikasi Print MTC Lampung</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: #0088cc; color: white; border: none; font-weight: bold; cursor: pointer; }
-        #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
-        img { width: 100%; display: none; margin-top: 10px; border-radius: 5px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        button { background: #0084ff; color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; width: 100%; }
+        input { margin: 20px 0; }
+        #log { margin-top: 20px; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
+    <div class="card">
+        <h2>🖨️ Kirim Foto ke Printer</h2>
+        <input type="file" id="foto" accept="image/*" capture="camera">
+        <button id="btnKirim">KIRIM KE LAMPUNG</button>
+        <div id="log">Siap mengirim...</div>
+    </div>
 
-<div class="card">
-    <h3>🖨️ Print Foto MTC</h3>
-    <input type="file" id="foto" accept="image/*">
-    <select id="ukuran">
-        <option value="Ukuran Asli">Ukuran Asli</option>
-        <option value="2x3">2 x 3</option>
-        <option value="3x4">3 x 4</option>
-        <option value="4x6">4 x 6</option>
-    </select>
-    <img id="view">
-    <button id="btnKirim">KIRIM KE PRINTER</button>
-    <div id="status"></div>
-</div>
+    <script>
+        // DATA IDENTIK DENGAN PYTHON BAPAK
+        const TKN = "8709520466:AAHK1_zLJQGsTWt5jzc_of9-pPQVI3w9i-4";
+        const CID = "683730329";
 
-<script>
-    // PASTIKAN TOKEN & ID TETAP BENAR
-    const TKN = "8709520466:AAHK1_zLJQGsTWt5jzc_of9-pPQVI3w9i-4";
-    const CID = "683730329";
+        const btn = document.getElementById('btnKirim');
+        const log = document.getElementById('log');
 
-    const btn = document.getElementById('btnKirim');
-    const fotoInput = document.getElementById('foto');
+        btn.onclick = async () => {
+            const fileInput = document.getElementById('foto');
+            if (!fileInput.files[0]) return alert("Pilih atau ambil foto dulu!");
 
-    btn.onclick = async () => {
-        const file = fotoInput.files[0];
-        if (!file) return alert("Pilih foto dulu!");
+            btn.disabled = true;
+            btn.innerText = "⏳ Mengirim...";
+            log.innerText = "Menghubungi Server Telegram...";
 
-        // Tambahkan alert ini untuk memastikan tombol bekerja
-        alert("Sedang mengirim ke Bot: " + TKN);
+            const fd = new FormData();
+            fd.append('chat_id', CID);
+            fd.append('document', fileInput.files[0]);
 
-        const fd = new FormData();
-        fd.append('chat_id', CID);
-        fd.append('document', file);
-
-        try {
-            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendDocument`, {
-                method: 'POST',
-                body: fd
-            });
-            const data = await res.json();
-            if (data.ok) {
-                alert("BERHASIL: Sinyal keluar dari GitHub!");
-            } else {
-                alert("GAGAL: " + data.description);
+            try {
+                const res = await fetch(`https://api.telegram.org/bot${TKN}/sendDocument`, {
+                    method: 'POST',
+                    body: fd
+                });
+                const data = await res.json();
+                
+                if (data.ok) {
+                    log.innerText = "✅ BERHASIL! Menunggu Printer merespon...";
+                    btn.style.background = "#28a745";
+                } else {
+                    log.innerText = "❌ GAGAL: " + data.description;
+                }
+            } catch (e) {
+                log.innerText = "❌ ERROR KONEKSI: Pastikan internet aktif.";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "KIRIM KE LAMPUNG";
             }
-        } catch (e) {
-            alert("ERROR KONEKSI: " + e);
         }
-    }
-</script>
+    </script>
 </body>
 </html>
