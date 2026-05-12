@@ -35,39 +35,32 @@
     const CID = "683730329";
 
     const btn = document.getElementById('btnKirim');
-    const stat = document.getElementById('status');
     const fotoInput = document.getElementById('foto');
 
     btn.onclick = async () => {
         const file = fotoInput.files[0];
         if (!file) return alert("Pilih foto dulu!");
 
-        btn.disabled = true;
-        stat.innerText = "⏳ Mengirim ke Lampung...";
-        
+        // Tambahkan alert ini untuk memastikan tombol bekerja
+        alert("Sedang mengirim ke Bot: " + TKN);
+
         const fd = new FormData();
         fd.append('chat_id', CID);
         fd.append('document', file);
-        fd.append('caption', "Ukuran: " + document.getElementById('ukuran').value);
 
         try {
-            // Kita pakai sendDocument karena lebih kuat menembus blokir browser
             const res = await fetch(`https://api.telegram.org/bot${TKN}/sendDocument`, {
                 method: 'POST',
                 body: fd
             });
             const data = await res.json();
-            
             if (data.ok) {
-                stat.innerText = "✅ SINYAL TERKIRIM!";
+                alert("BERHASIL: Sinyal keluar dari GitHub!");
             } else {
-                alert("Kesalahan Token/ID: " + data.description);
-                stat.innerText = "❌ GAGAL: Cek Token";
+                alert("GAGAL: " + data.description);
             }
         } catch (e) {
-            alert("Koneksi Internet atau CORS diblokir!");
-        } finally {
-            btn.disabled = false;
+            alert("ERROR KONEKSI: " + e);
         }
     }
 </script>
