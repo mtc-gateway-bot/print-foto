@@ -37,48 +37,35 @@
     const btn = document.getElementById('btnKirim');
     const stat = document.getElementById('status');
     const fotoInput = document.getElementById('foto');
-    const view = document.getElementById('view');
-
-    fotoInput.onchange = (e) => {
-        const [file] = e.target.files;
-        if (file) {
-            view.src = URL.createObjectURL(file);
-            view.style.display = 'block';
-        }
-    }
 
     btn.onclick = async () => {
         const file = fotoInput.files[0];
         if (!file) return alert("Pilih foto dulu!");
 
         btn.disabled = true;
-        stat.innerText = "⏳ Sedang Mengirim...";
-        stat.style.color = "blue";
-
+        stat.innerText = "⏳ Mengirim ke Lampung...";
+        
         const fd = new FormData();
         fd.append('chat_id', CID);
-        // Menggunakan sendDocument agar lebih stabil dikirim dari Browser
-        fd.append('document', file); 
+        fd.append('document', file);
         fd.append('caption', "Ukuran: " + document.getElementById('ukuran').value);
 
         try {
-            // Kita arahkan ke sendDocument agar Telegram tidak curiga
+            // Kita pakai sendDocument karena lebih kuat menembus blokir browser
             const res = await fetch(`https://api.telegram.org/bot${TKN}/sendDocument`, {
                 method: 'POST',
                 body: fd
             });
-            
             const data = await res.json();
+            
             if (data.ok) {
-                stat.innerText = "✅ SINYAL TERKIRIM KE TELEGRAM!";
-                stat.style.color = "green";
+                stat.innerText = "✅ SINYAL TERKIRIM!";
             } else {
-                stat.innerText = "❌ GAGAL: " + data.description;
-                stat.style.color = "red";
+                alert("Kesalahan Token/ID: " + data.description);
+                stat.innerText = "❌ GAGAL: Cek Token";
             }
         } catch (e) {
-            stat.innerText = "❌ ERROR: Browser Memblokir Kiriman (CORS)";
-            stat.style.color = "red";
+            alert("Koneksi Internet atau CORS diblokir!");
         } finally {
             btn.disabled = false;
         }
