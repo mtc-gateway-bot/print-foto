@@ -1,47 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Kirim Foto MTC</title>
+    <title>MTC PRINT</title>
 </head>
 <body>
-    <h2>Kirim Foto ke Printer</h2>
-    
-    <input type="file" id="inputFoto" accept="image/*">
+    <h3>Tes Cetak MTC Lampung</h3>
+    <input type="file" id="pilih" accept="image/*">
     <br><br>
-    
-    <button id="btnKirim" style="height:50px; width:200px;">KIRIM SEKARANG</button>
-    
-    <p id="status">Status: Standby</p>
+    <button id="kirim" style="width:200px; height:50px;">KIRIM KE PRINTER</button>
+    <p id="pesan">Status: Siap</p>
 
     <script>
         const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
         const CID = "683730329";
 
-        document.getElementById('btnKirim').onclick = async () => {
-            const foto = document.getElementById('inputFoto').files[0];
-            const info = document.getElementById('status');
+        document.getElementById('kirim').onclick = async () => {
+            const file = document.getElementById('pilih').files[0];
+            if (!file) return alert("Pilih foto dulu!");
 
-            if (!foto) return alert("Pilih fotonya dulu Pak!");
-
-            info.innerText = "Sedang mengirim...";
+            document.getElementById('pesan').innerText = "Sedang mengirim...";
             
             const fd = new FormData();
             fd.append('chat_id', CID);
-            fd.append('photo', foto);
+            fd.append('photo', file);
 
             try {
+                // Menambahkan mode cors agar diizinkan oleh GitHub Pages
                 const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
                     method: 'POST',
-                    body: fd
+                    body: fd,
+                    mode: 'cors' 
                 });
                 const data = await res.json();
                 if (data.ok) {
-                    info.innerText = "✅ Berhasil Terkirim!";
+                    document.getElementById('pesan').innerText = "✅ TERKIRIM! Cek CMD Python.";
                 } else {
-                    info.innerText = "❌ Gagal: " + data.description;
+                    document.getElementById('pesan').innerText = "❌ GAGAL: " + data.description;
                 }
             } catch (e) {
-                info.innerText = "❌ Error Koneksi";
+                document.getElementById('pesan').innerText = "❌ ERROR: Masalah Jaringan/CORS";
             }
         };
     </script>
