@@ -8,7 +8,7 @@
         body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: #0088cc; color: white; border: none; font-weight: bold; }
+        button { background: #0088cc; color: white; border: none; font-weight: bold; cursor: pointer; }
         #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
         img { width: 100%; display: none; margin-top: 10px; border-radius: 5px; }
     </style>
@@ -35,7 +35,6 @@
     const fotoInput = document.getElementById('foto');
     const view = document.getElementById('view');
 
-    // Preview Gambar
     fotoInput.onchange = (e) => {
         const [file] = e.target.files;
         if (file) {
@@ -52,30 +51,26 @@
         stat.innerText = "⏳ Sedang Mengirim...";
         stat.style.color = "blue";
 
-        // TOKEN & ID LANGSUNG DI DALAM FUNGSI
         const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
         const CID = "683730329";
 
         const fd = new FormData();
         fd.append('chat_id', CID);
         fd.append('photo', file);
-        fd.append('caption', "Order Cetak: " + document.getElementById('ukuran').value);
+        fd.append('caption', "Ukuran: " + document.getElementById('ukuran').value);
 
         try {
             const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
                 method: 'POST',
                 body: fd
             });
-            
             const data = await res.json();
-
             if (data.ok) {
                 stat.innerText = "✅ BERHASIL DIKIRIM!";
                 stat.style.color = "green";
             } else {
                 stat.innerText = "❌ ERROR: " + data.description;
                 stat.style.color = "red";
-                console.log(data);
             }
         } catch (e) {
             stat.innerText = "❌ Masalah Koneksi";
@@ -85,6 +80,5 @@
         }
     }
 </script>
-
 </body>
 </html>
