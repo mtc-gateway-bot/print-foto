@@ -1,175 +1,87 @@
 <!DOCTYPE html>
-
 <html lang="id">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Sistem Cetak MTC</title>
-
     <style>
-
         body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
-
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
-
         input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-
         button { background: #0088cc; color: white; border: none; font-weight: bold; cursor: pointer; }
-
         button:disabled { background: #ccc; }
-
         #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
-
         img { width: 100%; display: none; margin-top: 10px; border-radius: 5px; }
-
     </style>
-
 </head>
-
 <body>
 
-
-
 <div class="card">
-
     <h3>🖨️ Print Foto MTC</h3>
-
     <input type="file" id="foto" accept="image/*">
-
     <img id="view" src="" alt="Preview">
-
     <select id="ukuran">
-
         <option value="full">Full Page Photo (A4)</option>
-
         <option value="setengah">13 x 18 cm (Setengah A4)</option>
-
         <option value="dompet">9 x 13 cm (Ukuran Dompet)</option>
-
     </select>
-
     <button id="btnKirim">KIRIM KE PRINTER</button>
-
     <div id="status">Pilih foto dan ukuran</div>
-
 </div>
 
-
-
 <script>
-
     const btn = document.getElementById('btnKirim');
-
     const stat = document.getElementById('status');
-
     const fotoInput = document.getElementById('foto');
-
     const view = document.getElementById('view');
-
     const ukuranSelect = document.getElementById('ukuran');
 
-
-
-    // INFO: Chat ID sudah saya perbaiki sesuai konfirmasi terakhir Bapak
-
     const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
-
     const CID = "683730329"; 
 
-
-
     fotoInput.onchange = (e) => {
-
         const [file] = e.target.files;
-
         if (file) {
-
             view.src = URL.createObjectURL(file);
-
             view.style.display = 'block';
-
             stat.innerText = "Foto siap dikirim!";
-
         }
-
     }
-
-
 
     btn.onclick = async () => {
-
         const file = fotoInput.files[0];
-
-        const ukuran = ukuranSelect.value;
-
         if (!file) return alert("Pilih foto dulu!");
 
-
-
         btn.disabled = true;
-
         stat.innerText = "⏳ Sedang Mengirim ke Epson...";
-
         stat.style.color = "blue";
 
-
-
         const fd = new FormData();
-
         fd.append('chat_id', CID);
-
         fd.append('photo', file);
-
-        fd.append('caption', ukuran);
-
-
+        fd.append('caption', ukuranSelect.value);
 
         try {
-
-            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
-
+            // Menambahkan timestamp (?t=) agar Telegram menganggap pesan selalu baru
+            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto?t=${Date.now()}`, {
                 method: 'POST',
-
                 body: fd
-
             });
-
             const data = await res.json();
-
             if (data.ok) {
-
-                stat.innerText = "✅ BERHASIL! Printer sedang menarik kertas...";
-
+                stat.innerText = "✅ BERHASIL! Cek jendela CMD Anda.";
                 stat.style.color = "green";
-
             } else {
-
                 stat.innerText = "❌ ERROR: " + data.description;
-
                 stat.style.color = "red";
-
             }
-
         } catch (e) {
-
-            stat.innerText = "❌ Masalah Koneksi ke Telegram";
-
+            stat.innerText = "❌ Masalah Koneksi";
             stat.style.color = "red";
-
         } finally {
-
             btn.disabled = false;
-
         }
-
     }
-
 </script>
-
 </body>
-
 </html>
