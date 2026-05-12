@@ -30,6 +30,7 @@
 </div>
 
 <script>
+    // PASTIKAN TOKEN & ID TETAP BENAR
     const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
     const CID = "683730329";
 
@@ -56,25 +57,27 @@
 
         const fd = new FormData();
         fd.append('chat_id', CID);
-        fd.append('photo', file);
+        // Menggunakan sendDocument agar lebih stabil dikirim dari Browser
+        fd.append('document', file); 
         fd.append('caption', "Ukuran: " + document.getElementById('ukuran').value);
 
         try {
-            // Kita gunakan sendPhoto, jika gagal otomatis bot menganggapnya document
-            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
+            // Kita arahkan ke sendDocument agar Telegram tidak curiga
+            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendDocument`, {
                 method: 'POST',
                 body: fd
             });
+            
             const data = await res.json();
             if (data.ok) {
-                stat.innerText = "✅ BERHASIL DIKIRIM!";
+                stat.innerText = "✅ SINYAL TERKIRIM KE TELEGRAM!";
                 stat.style.color = "green";
             } else {
-                stat.innerText = "❌ ERROR: " + data.description;
+                stat.innerText = "❌ GAGAL: " + data.description;
                 stat.style.color = "red";
             }
         } catch (e) {
-            stat.innerText = "❌ Masalah Jaringan/CORS";
+            stat.innerText = "❌ ERROR: Browser Memblokir Kiriman (CORS)";
             stat.style.color = "red";
         } finally {
             btn.disabled = false;
