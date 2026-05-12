@@ -1,45 +1,90 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>MTC PRINT</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Cetak MTC</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        button { background: #0088cc; color: white; border: none; font-weight: bold; }
+        #status { margin-top: 15px; font-size: 14px; font-weight: bold; }
+        img { width: 100%; display: none; margin-top: 10px; border-radius: 5px; }
+    </style>
 </head>
 <body>
-    <h3>Tes Cetak MTC Lampung</h3>
-    <input type="file" id="pilih" accept="image/*">
-    <br><br>
-    <button id="kirim" style="width:200px; height:50px;">KIRIM KE PRINTER</button>
-    <p id="pesan">Status: Siap</p>
 
-    <script>
+<div class="card">
+    <h3>🖨️ Print Foto MTC</h3>
+    <input type="file" id="foto" accept="image/*">
+    <select id="ukuran">
+        <option value="Ukuran Asli">Ukuran Asli</option>
+        <option value="2x3">2 x 3</option>
+        <option value="3x4">3 x 4</option>
+        <option value="4x6">4 x 6</option>
+    </select>
+    <img id="view">
+    <button id="btnKirim">KIRIM KE PRINTER</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    const btn = document.getElementById('btnKirim');
+    const stat = document.getElementById('status');
+    const fotoInput = document.getElementById('foto');
+    const view = document.getElementById('view');
+
+    // Preview Gambar
+    fotoInput.onchange = (e) => {
+        const [file] = e.target.files;
+        if (file) {
+            view.src = URL.createObjectURL(file);
+            view.style.display = 'block';
+        }
+    }
+
+    btn.onclick = async () => {
+        const file = fotoInput.files[0];
+        if (!file) return alert("Pilih foto dulu!");
+
+        btn.disabled = true;
+        stat.innerText = "⏳ Sedang Mengirim...";
+        stat.style.color = "blue";
+
+        // TOKEN & ID LANGSUNG DI DALAM FUNGSI
         const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
         const CID = "683730329";
 
-        document.getElementById('kirim').onclick = async () => {
-            const file = document.getElementById('pilih').files[0];
-            if (!file) return alert("Pilih foto dulu!");
+        const fd = new FormData();
+        fd.append('chat_id', CID);
+        fd.append('photo', file);
+        fd.append('caption', "Order Cetak: " + document.getElementById('ukuran').value);
 
-            document.getElementById('pesan').innerText = "Sedang mengirim...";
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
+                method: 'POST',
+                body: fd
+            });
             
-            const fd = new FormData();
-            fd.append('chat_id', CID);
-            fd.append('photo', file);
+            const data = await res.json();
 
-            try {
-                const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
-                    method: 'POST',
-                    body: fd,
-                    mode: 'cors' 
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    document.getElementById('pesan').innerText = "✅ TERKIRIM! Cek CMD Python.";
-                } else {
-                    document.getElementById('pesan').innerText = "❌ GAGAL: " + data.description;
-                }
-            } catch (e) {
-                document.getElementById('pesan').innerText = "❌ ERROR: Masalah Jaringan/CORS";
+            if (data.ok) {
+                stat.innerText = "✅ BERHASIL DIKIRIM!";
+                stat.style.color = "green";
+            } else {
+                stat.innerText = "❌ ERROR: " + data.description;
+                stat.style.color = "red";
+                console.log(data);
             }
-        };
-    </script>
+        } catch (e) {
+            stat.innerText = "❌ Masalah Koneksi";
+            stat.style.color = "red";
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+
 </body>
 </html>
