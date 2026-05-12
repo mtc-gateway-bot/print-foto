@@ -42,59 +42,38 @@
 
     // Token & Chat ID (Sesuai milik Anda)
     const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
-    const CID = "683730329";
+const CID = "683730329";
 
-    // Preview Gambar saat dipilih
-    fotoInput.onchange = (e) => {
-        const [file] = e.target.files;
-        if (file) {
-            view.src = URL.createObjectURL(file);
-            view.style.display = 'block';
-            stat.innerText = "Siap kirim!";
-            stat.style.color = "black";
-        }
-    }
+btn.onclick = async () => {
+    const file = fotoInput.files[0];
+    const ukuran = ukuranSelect.value;
+    if (!file) return alert("Pilih foto dulu!");
 
-    btn.onclick = async () => {
-        const file = fotoInput.files[0];
-        const ukuran = ukuranSelect.value;
+    btn.disabled = true;
+    stat.innerText = "⏳ Memproses...";
 
-        if (!file) return alert("Pilih foto dulu!");
+    // Kita gunakan link GitHub yang Anda buat sebelumnya
+    // Saya asumsikan aplikasi Anda menyimpan/mengirim link GitHub
+    const linkGithub = "ISI_LINK_GITHUB_ANDA_DI_SINI"; 
 
-        btn.disabled = true;
-        stat.innerText = "⏳ Sedang Mengirim ke Epson...";
-        stat.style.color = "blue";
-
-        const fd = new FormData();
-        fd.append('chat_id', CID);
-        fd.append('photo', file);
+    try {
+        // Kita kirim sebagai PESAN TEKS biasa (sendMessage)
+        // Format: LINK|UKURAN
+        const pesan = `${linkGithub}|${ukuran}`;
+        const res = await fetch(`https://api.telegram.org/bot${TKN}/sendMessage?chat_id=${CID}&text=${encodeURIComponent(pesan)}`);
         
-        // Kuncinya di sini: Caption diisi dengan mode ukuran
-        // Python akan membaca ini untuk mengatur skala kertas
-        fd.append('caption', ukuran);
-
-        try {
-            const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
-                method: 'POST',
-                body: fd
-            });
-            
-            const data = await res.json();
-
-            if (data.ok) {
-                stat.innerText = "✅ BERHASIL! Printer sedang mencetak...";
-                stat.style.color = "green";
-            } else {
-                stat.innerText = "❌ ERROR: " + data.description;
-                stat.style.color = "red";
-            }
-        } catch (e) {
-            stat.innerText = "❌ Masalah Koneksi ke Telegram";
-            stat.style.color = "red";
-        } finally {
-            btn.disabled = false;
+        const data = await res.json();
+        if (data.ok) {
+            stat.innerText = "✅ PERINTAH TERKIRIM!";
+        } else {
+            stat.innerText = "❌ ERROR: " + data.description;
         }
+    } catch (e) {
+        stat.innerText = "❌ Koneksi Gagal";
+    } finally {
+        btn.disabled = false;
     }
+}
 </script>
 
 </body>
