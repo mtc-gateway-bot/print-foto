@@ -30,6 +30,9 @@
 </div>
 
 <script>
+    const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
+    const CID = "683730329";
+
     const btn = document.getElementById('btnKirim');
     const stat = document.getElementById('status');
     const fotoInput = document.getElementById('foto');
@@ -51,15 +54,13 @@
         stat.innerText = "⏳ Sedang Mengirim...";
         stat.style.color = "blue";
 
-        const TKN = "8774147483:AAGYMO63_xa0qd1YmCHINPNi_Vz3DChQoQc";
-        const CID = "683730329";
-
         const fd = new FormData();
         fd.append('chat_id', CID);
         fd.append('photo', file);
         fd.append('caption', "Ukuran: " + document.getElementById('ukuran').value);
 
         try {
+            // Kita gunakan sendPhoto, jika gagal otomatis bot menganggapnya document
             const res = await fetch(`https://api.telegram.org/bot${TKN}/sendPhoto`, {
                 method: 'POST',
                 body: fd
@@ -73,7 +74,7 @@
                 stat.style.color = "red";
             }
         } catch (e) {
-            stat.innerText = "❌ Masalah Koneksi";
+            stat.innerText = "❌ Masalah Jaringan/CORS";
             stat.style.color = "red";
         } finally {
             btn.disabled = false;
